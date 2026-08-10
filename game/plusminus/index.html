@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minda Matematik - 50 Tahap Cabaran</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .neon-glow-indigo {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
+        }
+
+        .neon-glow-emerald {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .neon-glow-rose {
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Custom Keyframe Animations */
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(129, 140, 248, 0.6)); }
+            50% { filter: drop-shadow(0 0 22px rgba(192, 132, 252, 0.8)); }
+        }
+
+        .animate-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Custom scrollbar for level selection grid */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden bg-slate-950 text-slate-100">
+
+    <!-- Background Canvas for subtle mathematical grid/particles -->
+    <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-20"></canvas>
+
+    <!-- Top Navigation Header -->
+    <header class="relative z-10 w-full max-w-5xl mx-auto p-4 sm:p-6">
+        <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white text-xl sm:text-2xl font-black shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+                        Minda Matematik
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">50 Tahap Cabaran Otak</p>
+                </div>
+            </div>
+
+            <!-- Controls & Stats Quick View -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Sound Toggle -->
+                <button id="soundBtn" class="w-10 h-10 rounded-xl glass-card hover:bg-slate-800 transition-colors flex items-center justify-center text-slate-300 hover:text-white" title="Bunyi (On/Off)">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Level Select Button -->
+                <button id="levelSelectBtn" class="px-3 py-2 rounded-xl glass-card hover:bg-slate-800 transition-colors flex items-center gap-2 text-xs sm:text-sm font-semibold text-indigo-300 hover:text-indigo-200">
+                    <i class="fa-solid fa-grid-2"></i>
+                    <span>Pilih Tahap</span>
+                </button>
+
+                <!-- Reset Game Button -->
+                <button id="resetGameBtn" class="w-10 h-10 rounded-xl glass-card hover:bg-rose-900/40 hover:text-rose-300 transition-colors flex items-center justify-center text-slate-400" title="Mula Semula Semua Tahap">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Section -->
+    <main class="relative z-10 my-auto w-full max-w-2xl mx-auto px-4 py-4">
+        
+        <!-- Scoreboard & Level Progress Bar Panel -->
+        <div class="glass-panel rounded-3xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
+            
+            <!-- Stats Header Grid -->
+            <div class="grid grid-cols-3 gap-2 text-center mb-4">
+                <div class="glass-card rounded-2xl p-2.5 sm:p-3">
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block">Tahap</span>
+                    <span id="levelDisplay" class="text-base sm:text-xl font-black text-indigo-400">1 / 50</span>
+                </div>
+                <div class="glass-card rounded-2xl p-2.5 sm:p-3">
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block">Skor</span>
+                    <span id="scoreDisplay" class="text-base sm:text-xl font-black text-amber-400">0</span>
+                </div>
+                <div class="glass-card rounded-2xl p-2.5 sm:p-3">
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block">Kombo</span>
+                    <span id="streakDisplay" class="text-base sm:text-xl font-black text-emerald-400">0 🔥</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div>
+                <div class="flex justify-between items-center text-xs font-medium mb-1.5 px-1">
+                    <span class="text-slate-400">Kemajuan Keseluruhan</span>
+                    <span id="progressPercent" class="text-indigo-300 font-bold">2%</span>
+                </div>
+                <div class="w-full h-3 bg-slate-900/80 rounded-full p-0.5 border border-slate-800/80 overflow-hidden">
+                    <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500" style="width: 2%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-indigo-500/20">
+            
+            <!-- Category & Hint Header -->
+            <div class="flex items-center justify-between mb-6">
+                <span id="difficultyBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    Asas
+                </span>
+                <button id="hintBtn" class="flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-xl border border-amber-500/20 transition-all">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    <span>Petunjuk</span>
+                </button>
+            </div>
+
+            <!-- Equation Banner -->
+            <div class="text-center py-6 sm:py-8 my-2 glass-card rounded-2xl relative overflow-hidden">
+                <div class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">Selesaikan Soalan</div>
+                <div id="questionText" class="text-3xl sm:text-5xl font-black tracking-wide text-white animate-glow font-mono">
+                    3 + 4 = ?
+                </div>
+            </div>
+
+            <!-- Hint Modal Box (Hidden by Default) -->
+            <div id="hintBox" class="hidden mb-6 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-amber-200 text-xs sm:text-sm animate-pop">
+                <div class="flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-info text-amber-400 text-base mt-0.5"></i>
+                    <div>
+                        <p class="font-bold text-amber-300 mb-0.5">Petunjuk Soalan:</p>
+                        <p id="hintText">Campurkan kedua-dua nombor tersebut.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Mode Tabs (Pilihan vs Taip) -->
+            <div class="flex rounded-xl bg-slate-900/60 p-1 mb-6 border border-slate-800">
+                <button id="tabChoice" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-indigo-600 text-white shadow">
+                    <i class="fa-solid fa-list-check mr-1.5"></i> Pilihan Jawapan
+                </button>
+                <button id="tabKeypad" class="flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition-all">
+                    <i class="fa-solid fa-keyboard mr-1.5"></i> Taip Jawapan
+                </button>
+            </div>
+
+            <!-- Mode A: Multiple Choice Options Container -->
+            <div id="choiceContainer" class="grid grid-cols-2 gap-3 sm:gap-4">
+                <!-- Option buttons populated dynamically -->
+            </div>
+
+            <!-- Mode B: Keypad / Input Box Container (Hidden by Default) -->
+            <div id="keypadContainer" class="hidden flex-col items-center">
+                <!-- Display Box -->
+                <div class="w-full flex items-center justify-between bg-slate-900 rounded-2xl px-5 py-3 mb-4 border border-slate-700">
+                    <span class="text-slate-400 text-xs font-bold uppercase">Jawapan:</span>
+                    <input type="text" id="keypadInput" class="bg-transparent text-right text-2xl font-black text-indigo-300 outline-none font-mono w-full ml-4" placeholder="0" readonly>
+                </div>
+
+                <!-- On-Screen Keypad -->
+                <div class="grid grid-cols-3 gap-2.5 w-full max-w-xs">
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="1">1</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="2">2</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="3">3</button>
+                    
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="4">4</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="5">5</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="6">6</button>
+                    
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="7">7</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="8">8</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="9">9</button>
+                    
+                    <button class="key-btn py-3 rounded-xl bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-lg font-bold transition-all" data-val="minus">-</button>
+                    <button class="key-btn py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-extrabold transition-all" data-val="0">0</button>
+                    <button class="key-btn py-3 rounded-xl bg-amber-900/40 hover:bg-amber-800/60 text-amber-300 text-lg font-bold transition-all" data-val="del"><i class="fa-solid fa-backspace"></i></button>
+                </div>
+
+                <div class="flex gap-2 w-full max-w-xs mt-3">
+                    <button id="clearKeypadBtn" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase transition-all">
+                        Padam
+                    </button>
+                    <button id="submitKeypadBtn" class="flex-[2] py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm uppercase tracking-wider shadow-lg transition-all">
+                        Hantar <i class="fa-solid fa-paper-plane ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feedback Message Banner -->
+            <div id="feedbackBanner" class="hidden mt-4 p-3 rounded-xl text-center font-bold text-sm animate-pop"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full text-center py-4 text-slate-500 text-xs">
+        <p>Minda Matematik &copy; 2026 - Permainan Matematik Interaktif 50 Tahap</p>
+    </footer>
+
+    <!-- LEVEL SELECTION MODAL -->
+    <div id="levelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden animate-pop">
+        <div class="glass-panel rounded-3xl p-6 w-full max-w-2xl max-h-[85vh] flex flex-col border border-indigo-500/30 shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div>
+                    <h2 class="text-xl font-black text-white">Pilih Tahap Soalan</h2>
+                    <p class="text-xs text-slate-400">Selesaikan tahap untuk membuka tahap seterusnya</p>
+                </div>
+                <button id="closeLevelModalBtn" class="w-9 h-9 rounded-xl glass-card hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Level Grid -->
+            <div id="levelGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2.5 my-6 overflow-y-auto pr-1">
+                <!-- Level buttons 1 to 50 generated via JS -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Tamat</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span> Semasa</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-800 inline-block"></span> Terkunci</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VICTORY MODAL (TAHNIAH SCREEN FOR LEVEL 50) -->
+    <div id="victoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg hidden animate-pop">
+        <div class="glass-panel rounded-3xl p-8 w-full max-w-lg text-center border border-amber-500/40 shadow-2xl relative overflow-hidden">
+            <!-- Glowing background aura -->
+            <div class="absolute -top-20 -left-20 w-48 h-48 bg-amber-500/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-purple-500/30 rounded-full blur-3xl"></div>
+
+            <!-- Trophy Icon -->
+            <div class="w-24 h-24 mx-auto mb-4 rounded-3xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-amber-950 text-5xl shadow-xl shadow-amber-500/40 animate-bounce">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+
+            <h2 class="text-3xl font-black tracking-tight text-white mb-1">TAHNIAH! 🎉</h2>
+            <p class="text-amber-300 font-bold text-sm mb-6">Anda Telah Menamatkan Kesemua 50 Tahap!</p>
+
+            <div class="glass-card rounded-2xl p-5 mb-6 text-left space-y-3 border border-amber-500/20">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs text-slate-400">Pangkat Minda:</span>
+                    <span class="text-sm font-black text-amber-400">👑 Raja Matematik</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs text-slate-400">Jumlah Skor:</span>
+                    <span id="finalScore" class="text-sm font-black text-indigo-300">0</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs text-slate-400">Ketepatan Jawapan:</span>
+                    <span id="finalAccuracy" class="text-sm font-black text-emerald-400">100%</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-400">Tahap Diselesaikan:</span>
+                    <span class="text-sm font-black text-white">50 / 50</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="shareVictoryBtn" class="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold text-sm flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-share-nodes"></i> Kongsi Skor
+                </button>
+                <button id="restartGameBtn" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-amber-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/30 transition-all">
+                    Main Semula <i class="fa-solid fa-rotate-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------
+           1. 50 CURATED MATH LEVELS (GRADUAL DIFFICULTY SCALING)
+           ------------------------------------------------------------- */
+        const LEVELS_DATA = [
+            // Level 1-5: Basic 1-Digit Addition & Subtraction
+            { id: 1, q: "3 + 4", a: 7, diff: "Asas", hint: "Tambahkan 3 dan 4 secara terus.", opts: [5, 6, 7, 8] },
+            { id: 2, q: "8 - 3", a: 5, diff: "Asas", hint: "Tolak 3 daripada 8.", opts: [4, 5, 6, 7] },
+            { id: 3, q: "5 + 6", a: 11, diff: "Asas", hint: "Hasil tambah nombor 5 dan 6.", opts: [10, 11, 12, 13] },
+            { id: 4, q: "12 - 7", a: 5, diff: "Asas", hint: "Berapakah baki apabila 12 ditolak 7?", opts: [4, 5, 6, 7] },
+            { id: 5, q: "9 + 8", a: 17, diff: "Asas", hint: "Campurkan 9 dan 8.", opts: [15, 16, 17, 18] },
+
+            // Level 6-10: 2-Digit Addition & Subtraction
+            { id: 6, q: "15 + 14", a: 29, diff: "Mudah", hint: "Tambah rumah sa (5+4=9), kemudian rumah puluh (1+1=2).", opts: [27, 28, 29, 30] },
+            { id: 7, q: "35 - 12", a: 23, diff: "Mudah", hint: "Tolak sa (5-2=3), kemudian puluh (3-1=2).", opts: [21, 22, 23, 24] },
+            { id: 8, q: "42 + 18", a: 60, diff: "Mudah", hint: "42 + 8 = 50, tambah lagi 10.", opts: [58, 60, 62, 64] },
+            { id: 9, q: "78 - 25", a: 53, diff: "Mudah", hint: "78 tolak 20 jadi 58, tolak lagi 5.", opts: [51, 52, 53, 54] },
+            { id: 10, q: "64 + 29", a: 93, diff: "Mudah", hint: "64 tambah 30 tolak 1.", opts: [91, 92, 93, 94] },
+
+            // Level 11-15: Basic Multiplication
+            { id: 11, q: "4 × 5", a: 20, diff: "Sederhana", hint: "Sifir 4 atau sifir 5 (4 kumpulan 5).", opts: [16, 18, 20, 22] },
+            { id: 12, q: "7 × 3", a: 21, diff: "Sederhana", hint: "7 ditambah sebanyak 3 kali.", opts: [18, 21, 24, 27] },
+            { id: 13, q: "8 × 6", a: 48, diff: "Sederhana", hint: "Sifir 8: 8, 16, 24, 32, 40, 48...", opts: [42, 46, 48, 54] },
+            { id: 14, q: "9 × 7", a: 63, diff: "Sederhana", hint: "Sifir 9: (10 × 7) - 7 = 70 - 7.", opts: [56, 61, 63, 72] },
+            { id: 15, q: "12 × 4", a: 48, diff: "Sederhana", hint: "10 × 4 + 2 × 4 = 40 + 8.", opts: [44, 46, 48, 52] },
+
+            // Level 16-20: Basic Division
+            { id: 16, q: "18 ÷ 3", a: 6, diff: "Sederhana", hint: "Berapa kali 3 untuk dapat 18?", opts: [4, 5, 6, 7] },
+            { id: 17, q: "32 ÷ 4", a: 8, diff: "Sederhana", hint: "Cari nombor yang didarab dengan 4 menghasilkan 32.", opts: [6, 7, 8, 9] },
+            { id: 18, q: "56 ÷ 7", a: 8, diff: "Sederhana", hint: "Bahagikan 56 secara saksama kepada 7 kumpulan.", opts: [7, 8, 9, 10] },
+            { id: 19, q: "72 ÷ 9", a: 8, diff: "Sederhana", hint: "9 × ? = 72.", opts: [7, 8, 9, 12] },
+            { id: 20, q: "84 ÷ 12", a: 7, diff: "Sederhana", hint: "12 × 7 = 84.", opts: [6, 7, 8, 9] },
+
+            // Level 21-25: 3 Numbers (+ and -)
+            { id: 21, q: "15 - 7 + 9", a: 17, diff: "Menengah", hint: "Kira dari kiri ke kanan: (15 - 7 = 8), kemudian (8 + 9).", opts: [15, 16, 17, 18] },
+            { id: 22, q: "24 + 16 - 12", a: 28, diff: "Menengah", hint: "24 + 16 = 40, kemudian 40 - 12.", opts: [26, 28, 30, 32] },
+            { id: 23, q: "45 - 20 + 15", a: 40, diff: "Menengah", hint: "45 - 20 = 25, kemudian 25 + 15.", opts: [35, 40, 45, 50] },
+            { id: 24, q: "60 - 25 - 10", a: 25, diff: "Menengah", hint: "Tolak 25 daripada 60 (35), kemudian tolak lagi 10.", opts: [20, 25, 30, 35] },
+            { id: 25, q: "33 + 27 - 18", a: 42, diff: "Menengah", hint: "33 + 27 = 60, kemudian 60 - 18.", opts: [40, 42, 44, 46] },
+
+            // Level 26-30: Mixed 2-step Operations (BODMAS Intro: Multiply First)
+            { id: 26, q: "5 + 3 × 4", a: 17, diff: "Sukar", hint: "Ikut tertib BODMAS! Darab dahulu (3 × 4 = 12), kemudian tambah 5.", opts: [17, 20, 27, 32] },
+            { id: 27, q: "20 - 2 × 6", a: 8, diff: "Sukar", hint: "Selesaikan 2 × 6 = 12 dahulu, kemudian 20 - 12.", opts: [8, 10, 12, 108] },
+            { id: 28, q: "8 × 3 - 10", a: 14, diff: "Sukar", hint: "8 × 3 = 24, kemudian tolak 10.", opts: [12, 14, 16, 18] },
+            { id: 29, q: "4 + 7 × 5", a: 39, diff: "Sukar", hint: "Darab 7 × 5 = 35 dahulu, kemudian 4 + 35.", opts: [35, 39, 45, 55] },
+            { id: 30, q: "30 - 4 × 5", a: 10, diff: "Sukar", hint: "4 × 5 = 20, kemudian 30 - 20.", opts: [10, 15, 20, 130] },
+
+            // Level 31-35: Mixed Division and Multiplication
+            { id: 31, q: "12 + 15 ÷ 3", a: 17, diff: "Sukar", hint: "Bahagi dahulu (15 ÷ 3 = 5), kemudian 12 + 5.", opts: [9, 13, 17, 21] },
+            { id: 32, q: "40 ÷ 5 + 7", a: 15, diff: "Sukar", hint: "40 ÷ 5 = 8, kemudian 8 + 7.", opts: [12, 15, 18, 20] },
+            { id: 33, q: "6 × 4 ÷ 3", a: 8, diff: "Sukar", hint: "6 × 4 = 24, kemudian 24 ÷ 3.", opts: [6, 8, 10, 12] },
+            { id: 34, q: "50 - 24 ÷ 4", a: 44, diff: "Sukar", hint: "Bahagi dahulu (24 ÷ 4 = 6), kemudian 50 - 6.", opts: [38, 42, 44, 46] },
+            { id: 35, q: "9 × 6 ÷ 2", a: 27, diff: "Sukar", hint: "9 × 6 = 54, bahagi 2 dapat 27.", opts: [21, 24, 27, 30] },
+
+            // Level 36-40: Mixed Operations with Negative Numbers
+            { id: 36, q: "7 - 9 × 4", a: -29, diff: "Pakar", hint: "Ikut BODMAS! Darab dahulu (9 × 4 = 36). Kemudian 7 - 36 = -29.", opts: [-29, -8, 8, 29] },
+            { id: 37, q: "15 - 4 × 8", a: -17, diff: "Pakar", hint: "4 × 8 = 32. Kemudian 15 - 32.", opts: [-17, -8, 17, 88] },
+            { id: 38, q: "10 - 6 × 5", a: -20, diff: "Pakar", hint: "6 × 5 = 30. Kemudian 10 - 30.", opts: [-20, -10, 10, 20] },
+            { id: 39, q: "25 - 8 × 5", a: -15, diff: "Pakar", hint: "8 × 5 = 40. 25 - 40 = -15.", opts: [-15, -5, 15, 85] },
+            { id: 40, q: "12 - 15 × 3", a: -33, diff: "Pakar", hint: "15 × 3 = 45. 12 - 45 = -33.", opts: [-33, -9, 9, 33] },
+
+            // Level 41-45: Operations with Brackets (Parentheses)
+            { id: 41, q: "(14 - 6) × 5", a: 40, diff: "Pakar", hint: "Selesaikan dalam kurungan dahulu! (14 - 6 = 8), kemudian 8 × 5.", opts: [16, 32, 40, 44] },
+            { id: 42, q: "36 ÷ (4 + 5)", a: 4, diff: "Pakar", hint: "Selesaikan (4 + 5 = 9), kemudian 36 ÷ 9.", opts: [4, 6, 9, 14] },
+            { id: 43, q: "(8 + 7) × (10 - 6)", a: 60, diff: "Pakar", hint: "(8 + 7 = 15) dan (10 - 6 = 4). Kemudian 15 × 4.", opts: [45, 50, 60, 75] },
+            { id: 44, q: "50 - (12 + 8) ÷ 4", a: 45, diff: "Pakar", hint: "Kurungan (12+8=20), bahagi 4 (5), kemudian 50 - 5.", opts: [35, 40, 45, 48] },
+            { id: 45, q: "(25 - 9) ÷ (2 + 2)", a: 4, diff: "Pakar", hint: "(25 - 9 = 16) ÷ (2 + 2 = 4) => 16 ÷ 4.", opts: [2, 4, 6, 8] },
+
+            // Level 46-50: Powers / Exponents & Complex BODMAS
+            { id: 46, q: "5² + 3 × 4", a: 37, diff: "Legenda", hint: "5² = 25. Darab 3 × 4 = 12. Tambah 25 + 12.", opts: [32, 37, 42, 112] },
+            { id: 47, q: "100 - (8 × 9 + 4)", a: 24, diff: "Legenda", hint: "Dalam kurungan (72 + 4 = 76). Kemudian 100 - 76.", opts: [20, 24, 28, 32] },
+            { id: 48, q: "7 - 9 × 4 + 12", a: -17, diff: "Legenda", hint: "9 × 4 = 36. Persamaan: 7 - 36 + 12 = -29 + 12 = -17.", opts: [-21, -17, -5, 4] },
+            { id: 49, q: "(25 - 5) ÷ (2 × 5) + 3²", a: 11, diff: "Legenda", hint: "20 ÷ 10 = 2. Tambah 3² (9). 2 + 9 = 11.", opts: [9, 11, 13, 15] },
+            { id: 50, q: "12² - (15 × 8 - 20) ÷ 2", a: 94, diff: "Legenda", hint: "12²=144. Kurungan (120-20 = 100). 100 ÷ 2 = 50. 144 - 50 = 94.", opts: [84, 94, 104, 114] }
+        ];
+
+        // Game State Variables
+        let currentLevelIndex = 0; // 0 to 49
+        let score = 0;
+        let streak = 0;
+        let unlockedLevel = 1;
+        let totalAttempts = 0;
+        let totalCorrect = 0;
+        let soundEnabled = true;
+        let keypadInputValue = "";
+        let currentInputMode = "choice"; // 'choice' or 'keypad'
+
+        // Web Audio Synthesizer for SFX
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSFX(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'click') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(450, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'win') {
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.2, now + i * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.12 + 0.3);
+                        o.start(now + i * 0.12);
+                        o.stop(now + i * 0.12 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio not allowed yet");
+            }
+        }
+
+        function loadProgress() {
+            const savedData = localStorage.getItem('minda_matematik_save');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    unlockedLevel = parsed.unlockedLevel || 1;
+                    score = parsed.score || 0;
+                    currentLevelIndex = (parsed.currentLevelIndex !== undefined) ? parsed.currentLevelIndex : (unlockedLevel - 1);
+                    if (currentLevelIndex >= 50) currentLevelIndex = 49;
+                } catch(e) {
+                    console.error("Save state error");
+                }
+            }
+        }
+
+        function saveProgress() {
+            const data = {
+                unlockedLevel: unlockedLevel,
+                score: score,
+                currentLevelIndex: currentLevelIndex
+            };
+            localStorage.setItem('minda_matematik_save', JSON.stringify(data));
+        }
+
+        const levelDisplay = document.getElementById('levelDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const streakDisplay = document.getElementById('streakDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const difficultyBadge = document.getElementById('difficultyBadge');
+        const questionText = document.getElementById('questionText');
+        const hintBtn = document.getElementById('hintBtn');
+        const hintBox = document.getElementById('hintBox');
+        const hintText = document.getElementById('hintText');
+        const choiceContainer = document.getElementById('choiceContainer');
+        const keypadContainer = document.getElementById('keypadContainer');
+        const keypadInput = document.getElementById('keypadInput');
+        const tabChoice = document.getElementById('tabChoice');
+        const tabKeypad = document.getElementById('tabKeypad');
+        const feedbackBanner = document.getElementById('feedbackBanner');
+        const levelModal = document.getElementById('levelModal');
+        const levelGrid = document.getElementById('levelGrid');
+        const victoryModal = document.getElementById('victoryModal');
+        const soundBtn = document.getElementById('soundBtn');
+        const soundIcon = document.getElementById('soundIcon');
+
+        function renderCurrentQuestion() {
+            const levelData = LEVELS_DATA[currentLevelIndex];
+
+            // Reset UI states
+            hintBox.classList.add('hidden');
+            feedbackBanner.classList.add('hidden');
+            keypadInputValue = "";
+            keypadInput.value = "";
+
+            // Header stats & progress updates
+            levelDisplay.innerText = `${levelData.id} / 50`;
+            scoreDisplay.innerText = score;
+            streakDisplay.innerText = `${streak} 🔥`;
+
+            const percentage = Math.round((levelData.id / 50) * 100);
+            progressBar.style.width = `${percentage}%`;
+            progressPercent.innerText = `${percentage}%`;
+
+            // Badge color based on difficulty
+            difficultyBadge.innerText = levelData.diff;
+            if (levelData.diff === "Asas" || levelData.diff === "Mudah") {
+                difficultyBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else if (levelData.diff === "Sederhana" || levelData.diff === "Menengah") {
+                difficultyBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+            } else if (levelData.diff === "Sukar" || levelData.diff === "Pakar") {
+                difficultyBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            } else {
+                difficultyBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
+            }
+
+            // Question & Hint Text
+            questionText.innerText = `${levelData.q} = ?`;
+            hintText.innerText = levelData.hint;
+
+            // Render Choice Buttons
+            choiceContainer.innerHTML = "";
+            // Shuffle choices slightly to make it dynamic
+            const shuffledOptions = [...levelData.opts].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn py-4 px-3 rounded-2xl glass-card hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500/50 text-xl font-extrabold text-indigo-100 hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg font-mono";
+                btn.innerText = opt;
+                btn.addEventListener('click', () => {
+                    playSFX('click');
+                    verifyAnswer(opt);
+                });
+                choiceContainer.appendChild(btn);
+            });
+        }
+
+        function verifyAnswer(userAns) {
+            totalAttempts++;
+            const levelData = LEVELS_DATA[currentLevelIndex];
+            const isCorrect = (parseInt(userAns, 10) === levelData.a);
+
+            if (isCorrect) {
+                playSFX('correct');
+                totalCorrect++;
+                streak++;
+
+                // Points calculation: Base 100 + Streak Bonus
+                const pointsGained = 100 + (streak > 1 ? (streak - 1) * 20 : 0);
+                score += pointsGained;
+
+                showFeedback(true, `Tepat Sekali! +${pointsGained} mata ${streak > 1 ? '🔥 Kombo ' + streak + 'x!' : ''}`);
+
+                // Update unlocked level
+                if (currentLevelIndex + 1 >= unlockedLevel && unlockedLevel < 50) {
+                    unlockedLevel = currentLevelIndex + 2;
+                }
+
+                saveProgress();
+
+                // Next Level delay
+                setTimeout(() => {
+                    if (currentLevelIndex < 49) {
+                        currentLevelIndex++;
+                        saveProgress();
+                        renderCurrentQuestion();
+                    } else {
+                        // LEVEL 50 COMPLETED! TAHNIAH!
+                        triggerVictoryScreen();
+                    }
+                }, 1200);
+
+            } else {
+                playSFX('wrong');
+                streak = 0; // Reset streak
+                streakDisplay.innerText = `0 🔥`;
+                
+                // Shake screen effect
+                questionText.parentElement.classList.remove('animate-shake');
+                void questionText.parentElement.offsetWidth; // Trigger reflow
+                questionText.parentElement.classList.add('animate-shake');
+
+                showFeedback(false, `Salah! Cuba lagi atau tekan Petunjuk. 💡`);
+            }
+        }
+
+        function showFeedback(isSuccess, message) {
+            feedbackBanner.classList.remove('hidden', 'bg-emerald-950/60', 'text-emerald-300', 'border-emerald-500/40', 'bg-rose-950/60', 'text-rose-300', 'border-rose-500/40');
+            
+            if (isSuccess) {
+                feedbackBanner.classList.add('bg-emerald-950/60', 'text-emerald-300', 'border', 'border-emerald-500/40');
+            } else {
+                feedbackBanner.classList.add('bg-rose-950/60', 'text-rose-300', 'border', 'border-rose-500/40');
+            }
+            feedbackBanner.innerText = message;
+        }
+
+        // Mode Tabs Event Listeners
+        tabChoice.addEventListener('click', () => {
+            playSFX('click');
+            currentInputMode = 'choice';
+            tabChoice.className = "flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-indigo-600 text-white shadow";
+            tabKeypad.className = "flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition-all";
+            choiceContainer.classList.remove('hidden');
+            keypadContainer.classList.add('hidden');
+            keypadContainer.classList.remove('flex');
+        });
+
+        tabKeypad.addEventListener('click', () => {
+            playSFX('click');
+            currentInputMode = 'keypad';
+            tabKeypad.className = "flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-indigo-600 text-white shadow";
+            tabChoice.className = "flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition-all";
+            choiceContainer.classList.add('hidden');
+            keypadContainer.classList.remove('hidden');
+            keypadContainer.classList.add('flex');
+        });
+
+        // Keypad buttons
+        document.querySelectorAll('.key-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                playSFX('click');
+                const val = btn.getAttribute('data-val');
+                if (val === 'del') {
+                    keypadInputValue = keypadInputValue.slice(0, -1);
+                } else if (val === 'minus') {
+                    if (keypadInputValue.startsWith('-')) {
+                        keypadInputValue = keypadInputValue.substring(1);
+                    } else if (keypadInputValue === "") {
+                        keypadInputValue = "-";
+                    }
+                } else {
+                    if (keypadInputValue.length < 6) {
+                        keypadInputValue += val;
+                    }
+                }
+                keypadInput.value = keypadInputValue;
+            });
+        });
+
+        document.getElementById('clearKeypadBtn').addEventListener('click', () => {
+            playSFX('click');
+            keypadInputValue = "";
+            keypadInput.value = "";
+        });
+
+        document.getElementById('submitKeypadBtn').addEventListener('click', () => {
+            if (keypadInputValue === "" || keypadInputValue === "-") return;
+            verifyAnswer(keypadInputValue);
+        });
+
+        // Keyboard Support
+        window.addEventListener('keydown', (e) => {
+            if (levelModal.classList.contains('hidden') === false) return;
+            if (victoryModal.classList.contains('hidden') === false) return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                if (currentInputMode === 'keypad') {
+                    if (keypadInputValue.length < 6) keypadInputValue += e.key;
+                    keypadInput.value = keypadInputValue;
+                }
+            } else if (e.key === '-') {
+                if (currentInputMode === 'keypad') {
+                    if (keypadInputValue === "") keypadInputValue = "-";
+                    keypadInput.value = keypadInputValue;
+                }
+            } else if (e.key === 'Backspace') {
+                if (currentInputMode === 'keypad') {
+                    keypadInputValue = keypadInputValue.slice(0, -1);
+                    keypadInput.value = keypadInputValue;
+                }
+            } else if (e.key === 'Enter') {
+                if (currentInputMode === 'keypad' && keypadInputValue !== "" && keypadInputValue !== "-") {
+                    verifyAnswer(keypadInputValue);
+                }
+            }
+        });
+
+        hintBtn.addEventListener('click', () => {
+            playSFX('click');
+            hintBox.classList.toggle('hidden');
+        });
+
+        // Level Select Modal Management
+        document.getElementById('levelSelectBtn').addEventListener('click', () => {
+            playSFX('click');
+            renderLevelGrid();
+            levelModal.classList.remove('hidden');
+        });
+
+        document.getElementById('closeLevelModalBtn').addEventListener('click', () => {
+            playSFX('click');
+            levelModal.classList.add('hidden');
+        });
+
+        function renderLevelGrid() {
+            levelGrid.innerHTML = "";
+            LEVELS_DATA.forEach((lvl, idx) => {
+                const isUnlocked = lvl.id <= unlockedLevel;
+                const isCurrent = idx === currentLevelIndex;
+
+                const btn = document.createElement('button');
+                btn.className = `h-11 rounded-xl font-bold text-xs flex flex-col items-center justify-center transition-all ${
+                    isCurrent 
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-400 shadow-lg shadow-indigo-500/40' 
+                        : isUnlocked 
+                            ? 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/30' 
+                            : 'bg-slate-900/60 text-slate-600 border border-slate-800 cursor-not-allowed'
+                }`;
+
+                btn.innerHTML = isUnlocked 
+                    ? `<span>${lvl.id}</span>${lvl.id < unlockedLevel ? '<i class="fa-solid fa-check text-[9px] text-emerald-400"></i>' : ''}` 
+                    : `<span>${lvl.id}</span><i class="fa-solid fa-lock text-[9px] opacity-50"></i>`;
+
+                if (isUnlocked) {
+                    btn.addEventListener('click', () => {
+                        playSFX('click');
+                        currentLevelIndex = idx;
+                        saveProgress();
+                        renderCurrentQuestion();
+                        levelModal.classList.add('hidden');
+                    });
+                }
+
+                levelGrid.appendChild(btn);
+            });
+        }
+
+        function triggerVictoryScreen() {
+            playSFX('win');
+            saveProgress();
+
+            document.getElementById('finalScore').innerText = score;
+            const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 100;
+            document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+
+            victoryModal.classList.remove('hidden');
+        }
+
+        document.getElementById('restartGameBtn').addEventListener('click', () => {
+            playSFX('click');
+            victoryModal.classList.add('hidden');
+            currentLevelIndex = 0;
+            score = 0;
+            streak = 0;
+            saveProgress();
+            renderCurrentQuestion();
+        });
+
+        document.getElementById('resetGameBtn').addEventListener('click', () => {
+            if (confirm("Adakah anda pasti mahu mula semula semua 50 tahap? Skor akan ditetapkan semula.")) {
+                playSFX('click');
+                unlockedLevel = 1;
+                currentLevelIndex = 0;
+                score = 0;
+                streak = 0;
+                saveProgress();
+                renderCurrentQuestion();
+            }
+        });
+
+        document.getElementById('shareVictoryBtn').addEventListener('click', () => {
+            playSFX('click');
+            const shareText = `🎉 Saya telah berjaya menamatkan 50 Tahap Teka-Teki Matematik Minda dengan Skor: ${score}! Uji minda anda sekarang!`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText);
+                alert("Keputusan disalin ke papan klip! Anda boleh berkongsi sekarang.");
+            } else {
+                const dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = shareText;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                alert("Keputusan disalin ke papan klip!");
+            }
+        });
+
+        // Sound Toggle
+        soundBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            if (soundEnabled) {
+                soundIcon.className = "fa-solid fa-volume-high text-indigo-400";
+                playSFX('click');
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+            }
+        });
+
+        function initBackgroundCanvas() {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const symbols = ['+', '-', '×', '÷', '=', '√', '%', 'π', '1', '7', '9'];
+            const particles = [];
+
+            for (let i = 0; i < 35; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    symbol: symbols[Math.floor(Math.random() * symbols.length)],
+                    size: Math.random() * 16 + 12,
+                    speedY: Math.random() * 0.4 + 0.1,
+                    opacity: Math.random() * 0.4 + 0.1
+                });
+            }
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#818cf8';
+                ctx.font = '16px Inter, sans-serif';
+
+                particles.forEach(p => {
+                    ctx.globalAlpha = p.opacity;
+                    ctx.font = `${p.size}px monospace`;
+                    ctx.fillText(p.symbol, p.x, p.y);
+
+                    p.y -= p.speedY;
+                    if (p.y < -20) {
+                        p.y = height + 20;
+                        p.x = Math.random() * width;
+                    }
+                });
+
+                requestAnimationFrame(animateCanvas);
+            }
+
+            animateCanvas();
+        }
+
+        window.onload = function() {
+            loadProgress();
+            renderCurrentQuestion();
+            initBackgroundCanvas();
+        };
+    </script>
+</body>
+</html>
