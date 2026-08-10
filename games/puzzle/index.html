@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puzzle Haiwan</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#dbeafe,#fef3c7);
+  text-align:center;
+  color:#243047;
+}
+header{padding:30px 15px 10px}
+h1{font-size:35px}
+.stats{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.box{
+  background:white;
+  padding:12px 18px;
+  border-radius:14px;
+  font-weight:bold;
+}
+#puzzle{
+  width:min(90vw,420px);
+  height:min(90vw,420px);
+  margin:20px auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  background:white;
+  padding:5px;
+  border-radius:18px;
+}
+.tile{
+  border:0;
+  border-radius:12px;
+  background:#f8fafc;
+  font-size:45px;
+  cursor:pointer;
+}
+button{
+  border:0;
+  border-radius:14px;
+  padding:13px 20px;
+  margin:5px;
+  font-size:16px;
+  font-weight:bold;
+  background:#2563eb;
+  color:white;
+}
+.back{background:#475569}
+#message{
+  min-height:25px;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🧩 Puzzle Haiwan</h1>
+<p>Susun semua haiwan mengikut urutan!</p>
+</header>
+
+<div class="stats">
+<div class="box">⭐ Mata: <span id="score">0</span></div>
+<div class="box">🔄 Gerakan: <span id="moves">0</span></div>
+</div>
+
+<div id="puzzle"></div>
+
+<div id="message"></div>
+
+<button onclick="newGame()">🔀 Puzzle Baru</button>
+<button onclick="showAnswer()">👀 Jawapan</button>
+<br>
+<button class="back" onclick="location.href='../../index.html'">
+⬅️ Menu Utama
+</button>
+
+<script>
+const animals=[
+"🐶","🐱","🦁",
+"🐯","🐰","🐼",
+"🐸","🐵","🐨"
+];
+
+let board=[];
+let selected=null;
+let moves=0;
+let score=0;
+
+function shuffle(array){
+ for(let i=array.length-1;i>0;i--){
+  let j=Math.floor(Math.random()*(i+1));
+  [array[i],array[j]]=[array[j],array[i]];
+ }
+ return array;
+}
+
+function newGame(){
+ board=shuffle([...Array(9).keys()]);
+ selected=null;
+ moves=0;
+ document.getElementById("message").textContent="";
+ draw();
+}
+
+function draw(){
+ const puzzle=document.getElementById("puzzle");
+ puzzle.innerHTML="";
+
+ board.forEach((animal,index)=>{
+  const button=document.createElement("button");
+  button.className="tile";
+  button.textContent=animals[animal];
+  button.onclick=()=>selectTile(index);
+  puzzle.appendChild(button);
+ });
+
+ document.getElementById("moves").textContent=moves;
+ document.getElementById("score").textContent=score;
+}
+
+function selectTile(index){
+
+ if(selected===null){
+  selected=index;
+  return;
+ }
+
+ if(selected===index){
+  selected=null;
+  return;
+ }
+
+ [board[selected],board[index]]
+ =[board[index],board[selected]];
+
+ moves++;
+ selected=null;
+
+ draw();
+
+ if(board.every((value,index)=>value===index)){
+  score+=100;
+  document.getElementById("message").textContent=
+  "🎉 Tahniah! Puzzle berjaya! +100 mata";
+  draw();
+ }
+}
+
+function showAnswer(){
+ board=[0,1,2,3,4,5,6,7,8];
+ selected=null;
+ draw();
+ document.getElementById("message").textContent=
+ "👀 Jawapan ditunjukkan. Cuba Puzzle Baru!";
+}
+
+newGame();
+</script>
+
+</body>
+</html>
